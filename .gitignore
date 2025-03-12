@@ -1,0 +1,57 @@
+# Игнорирование временных и лог-файлов Rails
+/log/*
+!/log/.keep
+/tmp
+*.bak
+*.swp
+.byebug_history
+
+# Игнорирование зависимостей Rails
+/.bundle
+/.config
+/vendor/bundle
+
+# Игнорирование базы данных и её файлов
+/db/*.sqlite3
+/db/*.sqlite3-journal
+/db/schema.rb
+/db/schema_migrations
+
+# Игнорирование сгенерированных секретных файлов
+/config/secrets.yml
+/config/credentials.yml.enc
+/config/master.key
+
+# Игнорирование загруженных файлов
+/public/uploads
+
+# Игнорирование системных файлов
+.DS_Store
+Thumbs.db
+
+# Игнорирование настроек для Node.js
+/node_modules
+
+# Игнорирование сборки и кэша React
+/build
+/.next
+/dist
+/public/packs
+/public/packs-test
+.cache
+.env
+.env.local
+.env.*.local
+
+# Игнорирование файлов для тестов и покрытия
+/coverage
+/.idea
+.vscode
+
+# Игнорирование настроек для Docker
+.docker
+docker-compose.override.yml
+
+# Игнорирование настроек для редакторов
+.idea
+.vscode

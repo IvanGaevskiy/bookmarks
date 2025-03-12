@@ -1,0 +1,50 @@
+# Ignore bundler config
+/.bundle
+/.config
+
+# Ignore byebug command history
+.byebug_history
+
+# Ignore the default Rails log files
+/log/*
+!/log/.keep
+
+# Ignore temp files
+/tmp
+*.bak
+*.swp
+
+# Ignore node modules
+/node_modules
+
+# Ignore by default
+*.log
+*.pid
+*.seed
+*.sqlite3
+
+# Ignore other system files
+.DS_Store
+Thumbs.db
+
+# Ignore environment variables file
+.env
+
+# Ignore coverage folder for test coverage
+/coverage
+
+# Ignore secrets for security
+/config/secrets.yml
+/config/credentials.yml.enc
+/config/master.key
+
+# Ignore the database system files
+/db/*.sqlite3
+/db/*.sqlite3-journal
+
+# Ignore uploaded files in development (Paperclip, CarrierWave, etc)
+public/uploads
+
+# Ignore files created by Rails' generator commands
+db/schema.rb
+db/schema_migrations
