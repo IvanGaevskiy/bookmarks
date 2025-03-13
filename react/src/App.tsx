@@ -1,6 +1,7 @@
 // src/App.tsx
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
+import BookmarkCard from './bookmarkCard';
 
 // Определение типов для закладок
 type Bookmark = {
@@ -259,28 +260,37 @@ const App: React.FC = () => {
       </form>
       <ul>
         {filteredBookmarks.map((bookmark) => (
-          <li key={bookmark.id} style={{ marginBottom: '10px' }}>
-            <a href={bookmark.url} target="_blank" rel="noopener noreferrer">
-              {`${bookmark.title}: ${bookmark.url}`}
-            </a>
-            <button
-              onClick={() => handleDeleteBookmark(bookmark.id)}
-              style={{ marginLeft: '10px' }}
-            >
-              Удалить
-            </button>
-            <button
-              onClick={() => {
-                const newTitle = prompt('Введите новый заголовок', bookmark.title);
-                const newUrl = prompt('Введите новый URL', bookmark.url);
-                if (newTitle && newUrl) {
-                  handleEditBookmark(bookmark.id, newTitle, newUrl);
-                }
-              }}
-            >
-              Редактировать
-            </button>
-          </li>
+          <div className="mb-2">
+            <BookmarkCard
+              key={bookmark.id}
+              title={bookmark.title}
+              url={bookmark.url}
+              onDelete={() => handleDeleteBookmark(bookmark.id)}
+              onEdit={() => handleEditBookmark}
+            />
+          </div>
+          // <li key={bookmark.id} style={{ marginBottom: '10px' }}>
+          //   <a href={bookmark.url} target="_blank" rel="noopener noreferrer">
+          //     {`${bookmark.title}: ${bookmark.url}`}
+          //   </a>
+          //   <button
+          //     onClick={() => handleDeleteBookmark(bookmark.id)}
+          //     style={{ marginLeft: '10px' }}
+          //   >
+          //     Удалить
+          //   </button>
+          //   <button
+          //     onClick={() => {
+          //       const newTitle = prompt('Введите новый заголовок', bookmark.title);
+          //       const newUrl = prompt('Введите новый URL', bookmark.url);
+          //       if (newTitle && newUrl) {
+          //         handleEditBookmark(bookmark.id, newTitle, newUrl);
+          //       }
+          //     }}
+          //   >
+          //     Редактировать
+          //   </button>
+          // </li>
         ))}
       </ul>
     </div>
