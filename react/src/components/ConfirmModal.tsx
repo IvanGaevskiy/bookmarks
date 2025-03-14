@@ -1,3 +1,5 @@
+import MyButton from "./MyButton";
+
 type ConfirmModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -20,23 +22,24 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+      <div className="bg-neutral-100 rounded-lg shadow-lg p-6 w-96 transform -translate-y-3/4">
         <h2 className="text-lg font-semibold mb-4">{title}</h2>
         <p className="text-gray-700 mb-6">{message}</p>
         <div className="flex justify-end space-x-3">
-          <button
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-            onClick={onClose}
-          >
-            {cancelText}
-          </button>
-          <button
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-            onClick={onConfirm}
-          >
-            {confirmText}
-          </button>
+          <MyButton
+            text={cancelText}
+            isPrimary={false}
+            onPress={onClose}
+          />
+          <MyButton
+            text={confirmText}
+            isPrimary={true}
+            onPress={async () => {
+              await onConfirm();
+              onClose();
+            }}
+          />
         </div>
       </div>
     </div>

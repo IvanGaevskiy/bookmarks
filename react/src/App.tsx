@@ -1,7 +1,11 @@
 // src/App.tsx
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
-import BookmarkCard from './bookmarkCard';
+import BookmarkCard from './components/BookmarkCard';
+import Search from './components/Search'
+import SearchCheckbox from './components/SearchCheckbox';
+import MyButton from './components/MyButton';
+import EditCreateModal  from './components/EditCreateModal'
 
 // Определение типов для закладок
 type Bookmark = {
@@ -85,19 +89,23 @@ const UPDATE_BOOKMARK = gql`
 const App: React.FC = () => {
   const { loading, error, data } = useQuery<{ bookmarks: Bookmark[] }>(GET_BOOKMARKS);
   
-  const [search, setSearch] = useState<string>("");
-  const [searchByDomain, setSearchByDomain] = useState<boolean>(false);
+  const [search, setSearch] = useState("");
+  const [searchByDomain, setSearchByDomain] = useState(false);
   
   const [createBookmark] = useMutation<CreateBookmarkResponse>(CREATE_BOOKMARK);
   const [deleteBookmark] = useMutation<DeleteBookmarkResponse>(DELETE_BOOKMARK);
   const [updateBookmark] = useMutation<UpdateBookmarkResponse>(UPDATE_BOOKMARK);
 
 
-  const [title, setTitle] = useState<string>('');
-  const [url, setUrl] = useState<string>('');
+  const [title, setTitle] = useState('');
+  const [url, setUrl] = useState('');
+  const formData = { title, setTitle, url, setUrl };
+  
+  const [isOpenEditModal, setIsOpenEditModal] = useState(false)
 
-  const handleAddBookmark = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleAddBookmark = async (e?: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+    console.log('method handleAddBookmark запущен!')
     try {
       const newBookmark = {
         id: Math.random().toString(36).substr(2, 9), // Временный ID
@@ -204,6 +212,7 @@ const App: React.FC = () => {
     }
   };
   
+  
   const filteredBookmarks = useMemo(() => {
     if (!data?.bookmarks) return [];
 
@@ -222,31 +231,41 @@ const App: React.FC = () => {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div style={{ margin: '20px' }}>
-      <h1>Закладки</h1>
-      <input
-        type="text"
-        placeholder="Поиск по названию"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{ marginRight: "10px" }}
+    <div className='mx-80 mt-6'>
+      <Search 
+        search={search} 
+
+        setSearch={setSearch}
       />
-      <label>
-        <input
-          type="checkbox"
-          checked={searchByDomain}
-          onChange={() => setSearchByDomain(!searchByDomain)}
+      <div className='flex gap-2 mb-4'>
+        <SearchCheckbox
+          text='Поиск по домену'
+          searchByDomain={searchByDomain}
+          setSearchByDomain={() => setSearchByDomain(!searchByDomain)}
         />
-        Искать по домену
-      </label>
-      <form onSubmit={handleAddBookmark} style={{ marginBottom: '20px' }}>
+        <MyButton
+          text='Создать'
+          isPrimary={true}
+          onPress={() => setIsOpenEditModal(true)}
+        />
+        <EditCreateModal
+            isOpen={isOpenEditModal}
+            isEdit={false}
+            params={formData}
+            onConfirm={handleAddBookmark}
+            onClose={() => setIsOpenEditModal(false)}
+            confirmText='Подтвердить'
+            cancelText= 'Отмена'
+            message='Заполните поля ниже и нажмите кнопку "Подтвердить"'
+        />
+      </div>
+      {/* <form onSubmit={handleAddBookmark}>
         <input
           type="text"
           placeholder="Название"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          style={{ marginRight: '10px' }}
         />
         <input
           type="url"
@@ -254,28 +273,26 @@ const App: React.FC = () => {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
-          style={{ marginRight: '10px' }}
         />
         <button type="submit">Добавить</button>
-      </form>
+      </form> */}
       <ul>
-        {filteredBookmarks.map((bookmark) => (
+        {filteredBookmarks.slice().reverse().map((bookmark) => (
           <div className="mb-2">
             <BookmarkCard
-              key={bookmark.id}
-              title={bookmark.title}
-              url={bookmark.url}
+              {...bookmark}
+              setTitle={setTitle}
+              setUrl={setUrl}
               onDelete={() => handleDeleteBookmark(bookmark.id)}
-              onEdit={() => handleEditBookmark}
+              onEdit={() => handleEditBookmark(bookmark.id, bookmark.title, bookmark.url)}
             />
           </div>
-          // <li key={bookmark.id} style={{ marginBottom: '10px' }}>
+          // <li key={bookmark.id}>
           //   <a href={bookmark.url} target="_blank" rel="noopener noreferrer">
           //     {`${bookmark.title}: ${bookmark.url}`}
           //   </a>
           //   <button
           //     onClick={() => handleDeleteBookmark(bookmark.id)}
-          //     style={{ marginLeft: '10px' }}
           //   >
           //     Удалить
           //   </button>
