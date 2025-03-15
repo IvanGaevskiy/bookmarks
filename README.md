@@ -1,7 +1,7 @@
 # Bookmark App
 
 ## Описание проекта
-Приложение для сохранения закладок на статьи. Позволяет добавлять, просматривать и удалять закладки. Backend реализован на Ruby on Rails с GraphQL, frontend на React с Apollo Client.
+Приложение для сохранения закладок на статьи. Позволяет добавлять, просматривать, удалять и редактировать закладки. Backend реализован на Ruby on Rails с GraphQL, frontend на React с Apollo Client.
 
 ## Стек технологий
 - **Backend:** Ruby 3.3.1, Ruby on Rails 7.2.2.1, graphql-ruby
