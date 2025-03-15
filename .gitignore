@@ -1,57 +1,63 @@
-# Игнорирование временных и лог-файлов Rails
-/log/*
-!/log/.keep
-/tmp
-*.bak
-*.swp
-.byebug_history
+# .gitignore для проекта bookmark с Rails API и React
 
-# Игнорирование зависимостей Rails
-/.bundle
-/.config
-/vendor/bundle
+# Игнорируем файлы и директории для Rails API-приложения
 
-# Игнорирование базы данных и её файлов
-/db/*.sqlite3
-/db/*.sqlite3-journal
-/db/schema.rb
-/db/schema_migrations
-
-# Игнорирование сгенерированных секретных файлов
-/config/secrets.yml
-/config/credentials.yml.enc
-/config/master.key
-
-# Игнорирование загруженных файлов
-/public/uploads
-
-# Игнорирование системных файлов
+# Системные файлы
 .DS_Store
 Thumbs.db
 
-# Игнорирование настроек для Node.js
-/node_modules
+# Логи
+rails_api/log/*
+rails_api/*.log
 
-# Игнорирование сборки и кэша React
-/build
-/.next
-/dist
-/public/packs
-/public/packs-test
-.cache
-.env
-.env.local
-.env.*.local
+# Базы данных
+rails_api/db/*.sqlite3
+rails_api/db/*.sqlite3-journal
 
-# Игнорирование файлов для тестов и покрытия
-/coverage
-/.idea
-.vscode
+# Среда разработки
+*.swp
+*.swo
 
-# Игнорирование настроек для Docker
-.docker
-docker-compose.override.yml
+# Файлы настроек для среды разработки
+rails_api/config/database.yml
+rails_api/config/secrets.yml
+rails_api/config/credentials.yml.enc
 
-# Игнорирование настроек для редакторов
-.idea
-.vscode
+# Папка с данными сессий
+rails_api/tmp/
+
+# Папка с кэшированными данными
+rails_api/public/assets/
+rails_api/public/packs/
+
+# Папка для Active Storage
+rails_api/storage/
+
+# Зависимости
+rails_api/vendor/bundle/
+rails_api/node_modules/
+
+# Папки с зависимостями
+rails_api/node_modules/
+rails_api/yarn-error.log
+
+# Системы тестирования
+rails_api/coverage/
+rails_api/spec/reports/
+rails_api/test/tmp/
+
+# Прочее
+rails_api/.byebug_history
+
+# Игнорируем файлы и директории для React-приложения
+
+# Папка сборки для React (при использовании Create React App)
+react/build/
+
+# Папка с node_modules для React
+react/node_modules/
+
+# Прочее
+react/npm-debug.log
+react/yarn-debug.log
+react/yarn-error.log
