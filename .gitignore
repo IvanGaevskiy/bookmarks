@@ -23,6 +23,12 @@ rails_api/config/database.yml
 rails_api/config/secrets.yml
 rails_api/config/credentials.yml.enc
 
+# Master key для Rails
+rails_api/config/master.key
+
+# Схема базы данных
+rails_api/db/schema.rb
+
 # Папка с данными сессий
 rails_api/tmp/
 

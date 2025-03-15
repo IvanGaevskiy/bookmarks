@@ -5,7 +5,7 @@
 
 ## Стек технологий
 - **Backend:** Ruby 3.3.1, Ruby on Rails 7.2.2.1, graphql-ruby
-- **Frontend:** React 18, Vite, Apollo Client
+- **Frontend:** React 19, Vite, Apollo Client
 - **База данных:** Sqlite3
 - **Стили:** Tailwind CSS
 
