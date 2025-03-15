@@ -70,8 +70,8 @@ const EditCreateModal: React.FC<EditCreateModalProps> = ({
             />
             <MyButton
               text={confirmText}
-              isSubmit={true}
-              isPrimary={true}
+              type = 'submit'
+              isPrimary
             />
           </div>
         </form>

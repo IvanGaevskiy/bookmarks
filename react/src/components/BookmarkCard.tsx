@@ -28,7 +28,7 @@ const BookmarkCard: React.FC<BookmarkCardProps> = ({ title, url, onEdit, onDelet
         />
         <MyButton
           text='Изменить'
-          isPrimary={true}
+          isPrimary
           onPress={onEdit}
         />
       </div>

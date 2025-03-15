@@ -141,7 +141,13 @@ const App: React.FC = () => {
   };
   
 
-  const handleDeleteBookmark = (id: string) => {
+  const handleDeleteBookmark = () => {
+    if (currentBookmarkId === null) {
+      return
+    }
+    
+    const id = currentBookmarkId;
+    
     deleteBookmark({
       variables: { input: { id } },
       optimisticResponse: {
@@ -166,6 +172,7 @@ const App: React.FC = () => {
       },
     })
     .then(() => {
+      setIsOpenConfirmModal(false)
       toast.success('Закладка успешно удалена!');
     })
     .catch((err) => {
@@ -177,7 +184,7 @@ const App: React.FC = () => {
 
   const handleEditBookmark = async (id: string, title: string, url: string) => {
     try {
-      const result = await updateBookmark({
+      await updateBookmark({
         variables: { input: { id, title, url } },
         optimisticResponse: {
           updateBookmark: {
@@ -209,15 +216,11 @@ const App: React.FC = () => {
         },
       });
       
-      if (result.data?.updateBookmark.errors.length === 0) {
-        toast.success('Закладка успешно обновлена!');
-      } else {
-        console.error(result.data?.updateBookmark.errors);
-        toast.error('Ошибка при обновлении закладки!');
-      }
+      toast.success('Закладка успешно обновлена!');
       
     } catch (err) {
       console.error(err);
+      toast.error('Ошибка при обновлении закладки!');
     }
   };
 
@@ -261,7 +264,15 @@ const App: React.FC = () => {
     setIsOpenConfirmModal(true);
   };
 
-
+  const confirmEditCreateModal = () => {
+    if (isEditMode && currentBookmarkId) {
+      handleEditBookmark(currentBookmarkId, title, url);
+    } else {
+      handleAddBookmark();
+    }
+    setIsOpenEditModal(false);
+  }
+  
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
@@ -270,7 +281,6 @@ const App: React.FC = () => {
       <div className='sticky top-0 bg-white p-2 rounded'>
         <Search
           search={search}
-
           setSearch={setSearch}
         />
         <div className='flex gap-2 mb-4'>
@@ -281,7 +291,7 @@ const App: React.FC = () => {
           />
           <MyButton
             text='+ Создать'
-            isPrimary={true}
+            isPrimary
             onPress={handleOpenEditModalForCreate}
           />
         </div>
@@ -291,7 +301,7 @@ const App: React.FC = () => {
       <div className=''>
         {filteredBookmarks.slice().reverse().map((bookmark) => (
 
-        <div className="mb-2">
+        <div className="mb-2" key={bookmark.id}>
           <BookmarkCard
             {...bookmark}
             onDelete={() => handleOpenEditModalForDelete(bookmark)}
@@ -305,11 +315,7 @@ const App: React.FC = () => {
       <ConfirmModal
         isOpen={isOpenConfirmModal}
         onClose={() => setIsOpenConfirmModal(false)}
-        onConfirm={() => {
-          if (currentBookmarkId != null) {
-            handleDeleteBookmark(currentBookmarkId)
-          }
-        }}
+        onConfirm={handleDeleteBookmark}
         title={`Удаление закладки ${title}`}
         message="Вы уверены, что хотите удалить этот элемент?"
         confirmText="Удалить"
@@ -320,14 +326,7 @@ const App: React.FC = () => {
         isOpen={isOpenEditModal}
         isEdit={isEditMode}
         params={formData}
-        onConfirm={() => {
-          if (isEditMode && currentBookmarkId) {
-            handleEditBookmark(currentBookmarkId, title, url);
-          } else {
-            handleAddBookmark();
-          }
-          setIsOpenEditModal(false);
-        }}
+        onConfirm={confirmEditCreateModal}
         onClose={() => setIsOpenEditModal(false)}
         confirmText='Подтвердить'
         cancelText='Отмена'

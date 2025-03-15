@@ -36,11 +36,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           />
           <MyButton
             text={confirmText}
-            isPrimary={true}
-            onPress={async () => {
-              await onConfirm();
-              onClose();
-            }}
+            isPrimary
+            onPress={onConfirm}
           />
         </div>
       </div>
