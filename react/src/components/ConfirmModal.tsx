@@ -1,5 +1,6 @@
 import MyButton from "./MyButton";
 
+
 type ConfirmModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -19,14 +20,15 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   confirmText = "Да",
   cancelText = "Отмена",
 }) => {
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50">
-      <div className="bg-neutral-100 rounded-lg shadow-lg p-6 w-96 transform -translate-y-3/4">
+    <div onClick={onClose} className="fixed inset-0 flex items-center justify-center bg-black/50 select-none">
+      <div onClick={(e) => e.stopPropagation()} className="bg-neutral-100 rounded-lg shadow-lg p-6 w-96 transform -translate-y-3/4">
         <h2 className="text-lg font-semibold mb-4">{title}</h2>
         <p className="text-gray-700 mb-6">{message}</p>
-        <div className="flex justify-end space-x-3">
+        <div className="flex justify-between space-x-3">
           <MyButton
             text={cancelText}
             isPrimary={false}

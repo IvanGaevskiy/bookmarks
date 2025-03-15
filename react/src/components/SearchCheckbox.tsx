@@ -7,7 +7,7 @@ type SearchCheckboxProps = {
 const SearchCheckbox: React.FC<SearchCheckboxProps> = ({text, searchByDomain, setSearchByDomain}) => {
   
   return (
-    <label className='inline-flex items-center'>
+    <label className='inline-flex items-center select-none'>
       <input
         type="checkbox"
         checked={searchByDomain}

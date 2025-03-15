@@ -6,7 +6,7 @@ type SearchProps = {
 const Search: React.FC<SearchProps> = ({search, setSearch}) => {
   
   return (
-    <div className=''>
+    <div className='select-none'>
       <input
         type="text"
         placeholder="Поиск"

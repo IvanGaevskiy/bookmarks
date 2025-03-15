@@ -1,11 +1,16 @@
 // src/App.tsx
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
+import { Toaster, toast } from 'react-hot-toast';
+
+
 import BookmarkCard from './components/BookmarkCard';
 import Search from './components/Search'
 import SearchCheckbox from './components/SearchCheckbox';
+import EditCreateModal from './components/EditCreateModal'
+import ConfirmModal from './components/ConfirmModal';
 import MyButton from './components/MyButton';
-import EditCreateModal  from './components/EditCreateModal'
+
 
 // Определение типов для закладок
 type Bookmark = {
@@ -87,11 +92,13 @@ const UPDATE_BOOKMARK = gql`
 
 
 const App: React.FC = () => {
-  const { loading, error, data } = useQuery<{ bookmarks: Bookmark[] }>(GET_BOOKMARKS);
-  
+  const { loading, error, data, refetch } = useQuery<{ bookmarks: Bookmark[] }>(GET_BOOKMARKS);
+
+
   const [search, setSearch] = useState("");
   const [searchByDomain, setSearchByDomain] = useState(false);
-  
+
+
   const [createBookmark] = useMutation<CreateBookmarkResponse>(CREATE_BOOKMARK);
   const [deleteBookmark] = useMutation<DeleteBookmarkResponse>(DELETE_BOOKMARK);
   const [updateBookmark] = useMutation<UpdateBookmarkResponse>(UPDATE_BOOKMARK);
@@ -100,48 +107,36 @@ const App: React.FC = () => {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const formData = { title, setTitle, url, setUrl };
-  
+
+
+  const [isOpenConfirmModal, setIsOpenConfirmModal] = useState(false);
   const [isOpenEditModal, setIsOpenEditModal] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentBookmarkId, setCurrentBookmarkId] = useState<string | null>(null);
+  
 
   const handleAddBookmark = async (e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
-    console.log('method handleAddBookmark запущен!')
     try {
-      const newBookmark = {
-        id: Math.random().toString(36).substr(2, 9), // Временный ID
-        title,
-        url,
-        createdAt: new Date().toISOString(),
-      };
-  
-      await createBookmark({
+      const result = await createBookmark({
         variables: { input: { title, url } },
-        optimisticResponse: {
-          createBookmark: {
-            bookmark: newBookmark,
-            errors: [],
-          },
-        },
-        update: (cache) => {
-          const existingData = cache.readQuery<{ bookmarks: Bookmark[] }>({
-            query: GET_BOOKMARKS,
-          });
-  
-          if (!existingData) return;
-  
-          cache.writeQuery({
-            query: GET_BOOKMARKS,
-            data: {
-              bookmarks: [...existingData.bookmarks, newBookmark],
-            },
-          });
-        },
       });
   
-      setTitle('');
-      setUrl('');
+      if (result.data?.createBookmark.errors.length === 0) {
+        setTitle('');
+        setUrl('');
+        refetch();
+        toast.success('Закладка успешно добавлена!');
+
+      } else {
+        console.error(result.data?.createBookmark.errors);
+        toast.error('Произошла ошибка при добавлении закладки!');
+
+      }
     } catch (err) {
       console.error(err);
+      toast.error('Произошла ошибка при добавлении закладки!');
+
     }
   };
   
@@ -159,9 +154,9 @@ const App: React.FC = () => {
         const existingData = cache.readQuery<{ bookmarks: Bookmark[] }>({
           query: GET_BOOKMARKS,
         });
-  
+
         if (!existingData) return;
-  
+
         cache.writeQuery({
           query: GET_BOOKMARKS,
           data: {
@@ -169,14 +164,20 @@ const App: React.FC = () => {
           },
         });
       },
-    }).catch((err) => {
+    })
+    .then(() => {
+      toast.success('Закладка успешно удалена!');
+    })
+    .catch((err) => {
       console.error(err);
+      toast.error(`Не удалось удалить элемент: ${err}`)
     });
   };
-  
+
+
   const handleEditBookmark = async (id: string, title: string, url: string) => {
     try {
-      await updateBookmark({
+      const result = await updateBookmark({
         variables: { input: { id, title, url } },
         optimisticResponse: {
           updateBookmark: {
@@ -190,29 +191,37 @@ const App: React.FC = () => {
         },
         update: (cache, { data }) => {
           if (!data?.updateBookmark.bookmark) return;
-  
+
           const existingData = cache.readQuery<{ bookmarks: Bookmark[] }>({
             query: GET_BOOKMARKS,
           });
-  
+
           if (!existingData) return;
-  
+
           const updatedBookmarks = existingData.bookmarks.map((b) =>
             b.id === id ? { ...b, title, url } : b
           );
-  
+
           cache.writeQuery({
             query: GET_BOOKMARKS,
             data: { bookmarks: updatedBookmarks },
           });
         },
       });
+      
+      if (result.data?.updateBookmark.errors.length === 0) {
+        toast.success('Закладка успешно обновлена!');
+      } else {
+        console.error(result.data?.updateBookmark.errors);
+        toast.error('Ошибка при обновлении закладки!');
+      }
+      
     } catch (err) {
       console.error(err);
     }
   };
-  
-  
+
+
   const filteredBookmarks = useMemo(() => {
     if (!data?.bookmarks) return [];
 
@@ -227,89 +236,115 @@ const App: React.FC = () => {
     });
   }, [data, search, searchByDomain]);
 
+
+  const handleOpenEditModalForEdit = (bookmark: Bookmark) => {
+    setTitle(bookmark.title);
+    setUrl(bookmark.url);
+    setCurrentBookmarkId(bookmark.id);
+    setIsEditMode(true);
+    setIsOpenEditModal(true);
+  };
+
+
+  const handleOpenEditModalForCreate = () => {
+    setTitle('');
+    setUrl('');
+    setIsEditMode(false);
+    setIsOpenEditModal(true)
+  };
+  
+  
+  const handleOpenEditModalForDelete = (bookmark: Bookmark) => {
+    setTitle(bookmark.title);
+    setUrl(bookmark.url);
+    setCurrentBookmarkId(bookmark.id);
+    setIsOpenConfirmModal(true);
+  };
+
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className='mx-80 mt-6'>
-      <Search 
-        search={search} 
+    <div className='mx-80 mt-2'>
+      <div className='sticky top-0 bg-white p-2 rounded'>
+        <Search
+          search={search}
 
-        setSearch={setSearch}
-      />
-      <div className='flex gap-2 mb-4'>
-        <SearchCheckbox
-          text='Поиск по домену'
-          searchByDomain={searchByDomain}
-          setSearchByDomain={() => setSearchByDomain(!searchByDomain)}
+          setSearch={setSearch}
         />
-        <MyButton
-          text='Создать'
-          isPrimary={true}
-          onPress={() => setIsOpenEditModal(true)}
-        />
-        <EditCreateModal
-            isOpen={isOpenEditModal}
-            isEdit={false}
-            params={formData}
-            onConfirm={handleAddBookmark}
-            onClose={() => setIsOpenEditModal(false)}
-            confirmText='Подтвердить'
-            cancelText= 'Отмена'
-            message='Заполните поля ниже и нажмите кнопку "Подтвердить"'
-        />
+        <div className='flex gap-2 mb-4'>
+          <SearchCheckbox
+            text='Поиск по домену'
+            searchByDomain={searchByDomain}
+            setSearchByDomain={() => setSearchByDomain(!searchByDomain)}
+          />
+          <MyButton
+            text='+ Создать'
+            isPrimary={true}
+            onPress={handleOpenEditModalForCreate}
+          />
+        </div>
+        
       </div>
-      {/* <form onSubmit={handleAddBookmark}>
-        <input
-          type="text"
-          placeholder="Название"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-        <input
-          type="url"
-          placeholder="URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          required
-        />
-        <button type="submit">Добавить</button>
-      </form> */}
-      <ul>
+      
+      <div className=''>
         {filteredBookmarks.slice().reverse().map((bookmark) => (
-          <div className="mb-2">
-            <BookmarkCard
-              {...bookmark}
-              setTitle={setTitle}
-              setUrl={setUrl}
-              onDelete={() => handleDeleteBookmark(bookmark.id)}
-              onEdit={() => handleEditBookmark(bookmark.id, bookmark.title, bookmark.url)}
-            />
-          </div>
-          // <li key={bookmark.id}>
-          //   <a href={bookmark.url} target="_blank" rel="noopener noreferrer">
-          //     {`${bookmark.title}: ${bookmark.url}`}
-          //   </a>
-          //   <button
-          //     onClick={() => handleDeleteBookmark(bookmark.id)}
-          //   >
-          //     Удалить
-          //   </button>
-          //   <button
-          //     onClick={() => {
-          //       const newTitle = prompt('Введите новый заголовок', bookmark.title);
-          //       const newUrl = prompt('Введите новый URL', bookmark.url);
-          //       if (newTitle && newUrl) {
-          //         handleEditBookmark(bookmark.id, newTitle, newUrl);
-          //       }
-          //     }}
-          //   >
-          //     Редактировать
-          //   </button>
-          // </li>
+
+        <div className="mb-2">
+          <BookmarkCard
+            {...bookmark}
+            onDelete={() => handleOpenEditModalForDelete(bookmark)}
+            onEdit={() => handleOpenEditModalForEdit(bookmark)}
+          />
+        </div>
+
         ))}
-      </ul>
+      </div>
+      
+      <ConfirmModal
+        isOpen={isOpenConfirmModal}
+        onClose={() => setIsOpenConfirmModal(false)}
+        onConfirm={() => {
+          if (currentBookmarkId != null) {
+            handleDeleteBookmark(currentBookmarkId)
+          }
+        }}
+        title={`Удаление закладки ${title}`}
+        message="Вы уверены, что хотите удалить этот элемент?"
+        confirmText="Удалить"
+        cancelText="Отмена"
+      />
+
+      <EditCreateModal
+        isOpen={isOpenEditModal}
+        isEdit={isEditMode}
+        params={formData}
+        onConfirm={() => {
+          if (isEditMode && currentBookmarkId) {
+            handleEditBookmark(currentBookmarkId, title, url);
+          } else {
+            handleAddBookmark();
+          }
+          setIsOpenEditModal(false);
+        }}
+        onClose={() => setIsOpenEditModal(false)}
+        confirmText='Подтвердить'
+        cancelText='Отмена'
+      />
+      
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          success: {
+            iconTheme: {
+              primary: 'oklch(0.609 0.126 221.723)',
+              secondary: 'white',
+            },
+            style: { background: "white", color: "oklch(0.609 0.126 221.723)", border: '2px solid oklch(0.609 0.126 221.723)' },
+          },
+        }}
+      />
     </div>
   );
 };
